@@ -2965,7 +2965,7 @@
     // 이렇게 해야 수장님 시선 타이머와 긴 TTS 음성이 서로 충돌하지 않습니다.
     const HYBRID_AUDIO_EVENT_ONLY = true;
     const MEETING_DIALOGUE_USES_VOICE = !HYBRID_AUDIO_EVENT_ONLY;
-    const WATCH_DIALOGUE_USES_VOICE = false;
+    const WATCH_DIALOGUE_USES_VOICE = true;
     const WATCH_DIALOGUE_USES_TEXT = false;
 
 
@@ -3469,7 +3469,7 @@
     // 수장님 시선/판정은 기존 타이머대로 즉시 진행하되,
     // 음성 대화는 절대 중간에 끊지 않고 큐에 넣어 순서대로 재생합니다.
     const WATCH_DIALOGUE_PENDING_MAX_MS = 2400;
-    const WATCH_DIALOGUE_COOLDOWN_MS = 8200;
+    const WATCH_DIALOGUE_COOLDOWN_MS = 4600;
 
     function nextDialogueToken() {
       dialogueState.token += 1;
@@ -3856,9 +3856,9 @@
     }
 
     function requestWatchDialogueSequence() {
-      // 이벤트 전용 음성 모드에서는 공태연 감시 구간의 긴 경고/변명 대화를 재생하지 않습니다.
-      // WARNING 화면 + 효과음 + 실제 적발 음성만 사용해야 시선/자막/음성 싱크가 안정됩니다.
-      if (HYBRID_AUDIO_EVENT_ONLY || !WATCH_DIALOGUE_USES_TEXT) return false;
+      // 일반 회의 음성은 HYBRID 모드로 제한하더라도,
+      // 수장님이 공태연을 실제로 쳐다보는 WATCH 구간의 티키타카는 자막/음성을 재생합니다.
+      if (!WATCH_DIALOGUE_USES_TEXT) return false;
       if (!isWatchDialogueContextActive()) return false;
 
       const now = performance.now();
@@ -4041,11 +4041,21 @@
       dialogueState.protectedSequence = true;
       try {
         const watchLine = pickLeaderVoiceLine("watchLeader");
-        await createBubble(bubblePeople[0], watchLine.text, WATCH_DIALOGUE_USES_VOICE, watchLine.source, { token, afterGapMs: 120, textOnlyVisibleMs: 1600 });
+        await createBubble(bubblePeople[0], watchLine.text, WATCH_DIALOGUE_USES_VOICE, watchLine.source, {
+          token,
+          afterGapMs: 140,
+          textOnlyVisibleMs: 1900,
+          voiceOptions: { interrupt: true }
+        });
         if (!isDialogueTokenActive(token) || !isWatchDialogueContextActive()) return;
 
         const playerLine = pickPlayerReplyVoiceLine();
-        await createBubble(playerSpeaker, playerLine.text, WATCH_DIALOGUE_USES_VOICE, playerLine.source, { token, afterGapMs: 160, textOnlyVisibleMs: 1700 });
+        await createBubble(playerSpeaker, playerLine.text, WATCH_DIALOGUE_USES_VOICE, playerLine.source, {
+          token,
+          afterGapMs: 180,
+          textOnlyVisibleMs: 2000,
+          voiceOptions: { interrupt: true }
+        });
       } finally {
         if (dialogueState.token === token) {
           dialogueState.busy = false;
@@ -4380,7 +4390,7 @@
 
         function setWatchPhase() {
       const cfg = getStageConfig(game.stage);
-      // HYBRID: 수장님이 공태연을 볼 때는 긴 경고/변명 음성을 재생하지 않고, 화면 경고와 실제 적발 음성만 사용합니다.
+      // WATCH 진입 시 일반 회의 대사는 정리하고, 공태연 전용 티키타카 대사를 우선 재생합니다.
       if (HYBRID_AUDIO_EVENT_ONLY && dialogueState.busy && !dialogueState.protectedSequence) cancelDialogue(false, true);
       game.phase = "watch";
       game.phaseTimer = cfg.watchTime;
@@ -5019,7 +5029,16 @@
 
       if (game.phase === "safe" && game.phaseTimer <= 0) setPrewarningPhase();
       else if (game.phase === "prewarning" && game.phaseTimer <= 0) setWatchPhase();
-      else if (game.phase === "watch" && game.phaseTimer <= 0) setSafePhase();
+      else if (game.phase === "watch" && game.phaseTimer <= 0) {
+        // 공태연 WATCH 티키타카 자막/음성이 재생 중이면 중간에 끊지 않고,
+        // 수장님 시선을 공태연에게 유지한 뒤 대화가 끝나면 안전 구간으로 넘어갑니다.
+        if (dialogueState.protectedSequence) {
+          game.phaseTimer = 0.25;
+          setGaze("player");
+        } else {
+          setSafePhase();
+        }
+      }
       else if (game.phase === "caught" && game.phaseTimer <= 0 && game.life > 0) setSafePhase();
       else if (game.phase === "stageClear" && game.phaseTimer <= 0) setSafePhase();
     }
