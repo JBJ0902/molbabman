@@ -4518,7 +4518,8 @@
       const nextFailCount = Math.min(5, Math.max(0, Number(game.objectiveFailCount) || 0) + 1);
       game.objectiveFailCount = nextFailCount;
 
-      if (game.rankIndex < RANKS.length - 1) game.rankIndex += 1;
+      // 목표 미달 경고 1~4/5는 방출 카운트만 올립니다.
+      // 계급을 방출까지 내리는 처리는 5/5 로켓 방출 확정 시점에만 합니다.
 
       pulseWrap("danger");
       showResultBanner(game.objectiveFailCount >= 5 ? "로켓 방출!" : "몰밥 미션 실패!", "danger", 1250);
