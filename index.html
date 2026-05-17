@@ -2,8 +2,8 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>몰밥 회의실 서바이벌 v9.18.21 - 타이머 생존/HUD 수정</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
+  <title>몰밥 회의실 서바이벌 v9.18.35 - 캐릭터 링크 핫스팟</title>
   <style>
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     body {
@@ -348,6 +348,98 @@
       height: auto;
       display: block;
       border-radius: 22px;
+    }
+
+    #hotspotLayer {
+      position: absolute;
+      inset: 0;
+      z-index: 14;
+      pointer-events: none;
+    }
+    .meetingHotspot {
+      position: absolute;
+      transform: translate(-50%, -50%);
+      border-radius: 22px;
+      pointer-events: auto;
+      cursor: pointer;
+      text-decoration: none;
+      outline: none;
+      background: rgba(255,255,255,.015);
+      border: 1px solid rgba(255,255,255,0);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0), 0 0 0 rgba(0,0,0,0);
+      transition: background .2s ease, border-color .2s ease, box-shadow .2s ease, transform .2s ease, opacity .2s ease;
+      -webkit-backdrop-filter: blur(0px);
+      backdrop-filter: blur(0px);
+      opacity: .02;
+      overflow: visible;
+    }
+    .meetingHotspot:hover,
+    .meetingHotspot:focus-visible,
+    .meetingHotspot.touch-active {
+      opacity: 1;
+      background: linear-gradient(180deg, rgba(110,215,255,.16), rgba(255,215,90,.12));
+      border-color: rgba(162,235,255,.84);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.28), 0 0 24px rgba(110,215,255,.24);
+      -webkit-backdrop-filter: blur(3px);
+      backdrop-filter: blur(3px);
+      transform: translate(-50%, -50%) scale(1.015);
+    }
+    .meetingHotspot::before {
+      content: "";
+      position: absolute;
+      inset: 8px;
+      border-radius: 16px;
+      border: 1px dashed rgba(255,255,255,.0);
+      transition: border-color .2s ease;
+    }
+    .meetingHotspot:hover::before,
+    .meetingHotspot:focus-visible::before,
+    .meetingHotspot.touch-active::before {
+      border-color: rgba(255,255,255,.28);
+    }
+    .meetingHotspotLabel {
+      position: absolute;
+      left: 50%;
+      bottom: calc(100% + 8px);
+      transform: translateX(-50%) translateY(6px);
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(6, 10, 22, .82);
+      border: 1px solid rgba(165, 236, 255, .58);
+      color: #ecfbff;
+      font-size: clamp(10px, .85vw, 14px);
+      font-weight: 800;
+      letter-spacing: .02em;
+      text-align: center;
+      white-space: nowrap;
+      opacity: 0;
+      pointer-events: none;
+      box-shadow: 0 10px 22px rgba(0,0,0,.25);
+      transition: opacity .2s ease, transform .2s ease;
+    }
+    .meetingHotspot:hover .meetingHotspotLabel,
+    .meetingHotspot:focus-visible .meetingHotspotLabel,
+    .meetingHotspot.touch-active .meetingHotspotLabel {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+    .meetingHotspotLabel small {
+      display: block;
+      margin-top: 2px;
+      font-size: .84em;
+      font-weight: 600;
+      color: #cdeef8;
+      opacity: .92;
+    }
+    @media (pointer: coarse) {
+      .meetingHotspot {
+        opacity: .12;
+        background: rgba(125, 208, 255, .04);
+        border-color: rgba(165, 236, 255, .16);
+      }
+      .meetingHotspotLabel {
+        font-size: clamp(11px, 1.9vw, 14px);
+      }
     }
 
     #dialogueLayer, #chewFxLayer, #comboFxLayer { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
@@ -4668,6 +4760,299 @@
       }
     }
 
+
+
+    /* PATCH v9.18.34 - PC/모바일 공통 화면 맞춤 + 모바일 가로모드 안정화 */
+    :root {
+      --app-w: 100vw;
+      --app-h: 100dvh;
+      --game-safe-pad: 10px;
+      --game-base-ratio: 1.7688229056; /* 1668 / 943 */
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden !important;
+      overscroll-behavior: none;
+      background: #03050b;
+    }
+
+    body {
+      min-height: var(--app-h) !important;
+      height: var(--app-h) !important;
+      padding: 0 !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+    }
+
+    #gameWrap {
+      width: min(
+        calc(var(--app-w) - var(--game-safe-pad)),
+        calc((var(--app-h) - var(--game-safe-pad)) * var(--game-base-ratio)),
+        1668px
+      ) !important;
+      height: auto !important;
+      max-width: none !important;
+      max-height: calc(var(--app-h) - var(--game-safe-pad)) !important;
+      aspect-ratio: 1668 / 943 !important;
+      flex: 0 0 auto;
+      transform: translateZ(0);
+      transform-origin: center center;
+      contain: layout paint;
+    }
+
+    .overlay {
+      padding: clamp(8px, 1.6vmin, 24px) !important;
+      overflow: hidden !important;
+    }
+
+    .overlay > .panel,
+    #startOverlay .startPanel,
+    #onlineArenaOverlay .onlineArenaPanel,
+    #optionsOverlay .panel,
+    #endOverlay .panel,
+    #endingGalleryOverlay .panel,
+    #endingIllustrationOverlay .panel {
+      width: min(1120px, calc(100% - 20px)) !important;
+      max-width: calc(100% - 20px) !important;
+      max-height: calc(100% - 20px) !important;
+      overflow-y: auto !important;
+      overflow-x: hidden !important;
+      overscroll-behavior: contain;
+      scrollbar-gutter: stable;
+    }
+
+    #startOverlay .startPanel {
+      width: min(1080px, calc(100% - 20px)) !important;
+    }
+
+    #onlineArenaOverlay .onlineArenaPanel,
+    #endingGalleryOverlay .panel {
+      width: min(1260px, calc(100% - 20px)) !important;
+    }
+
+    #endingIllustrationOverlay .panel {
+      width: min(1320px, calc(100% - 20px)) !important;
+    }
+
+    #optionsOverlay .panel {
+      width: min(940px, calc(100% - 20px)) !important;
+    }
+
+    #mobileRotateNotice {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 999999;
+      align-items: center;
+      justify-content: center;
+      padding: max(18px, env(safe-area-inset-top)) max(18px, env(safe-area-inset-right)) max(18px, env(safe-area-inset-bottom)) max(18px, env(safe-area-inset-left));
+      background: radial-gradient(circle at 50% 20%, rgba(255,220,95,.14), rgba(4,6,14,.92) 58%, rgba(2,3,9,.98) 100%);
+      color: #fff;
+      text-align: center;
+    }
+
+    #mobileRotateNotice .mobileNoticeCard {
+      width: min(420px, 92vw);
+      padding: 24px 20px 22px;
+      border-radius: 26px;
+      background: linear-gradient(145deg, rgba(36,38,56,.96), rgba(9,11,22,.97));
+      border: 1px solid rgba(255,255,255,.18);
+      box-shadow: 0 20px 70px rgba(0,0,0,.58), inset 0 0 0 1px rgba(255,255,255,.05);
+    }
+
+    #mobileRotateNotice .mobileNoticeIcon {
+      font-size: 44px;
+      line-height: 1;
+      margin-bottom: 12px;
+    }
+
+    #mobileRotateNotice .mobileNoticeTitle {
+      color: #ffdb68;
+      font-size: 24px;
+      font-weight: 1000;
+      letter-spacing: -.04em;
+      text-shadow: 0 3px 0 rgba(90,55,0,.5), 0 0 18px rgba(255,215,95,.20);
+    }
+
+    #mobileRotateNotice .mobileNoticeText {
+      margin-top: 10px;
+      color: rgba(255,255,255,.84);
+      font-size: 15px;
+      line-height: 1.55;
+      font-weight: 800;
+      word-break: keep-all;
+    }
+
+    #mobileRotateNotice button {
+      width: 100%;
+      margin-top: 18px !important;
+      min-height: 48px;
+      padding: 10px 14px !important;
+      border-radius: 16px !important;
+      font-size: 16px !important;
+    }
+
+    body.is-mobile-portrait:not(.allow-portrait-play) #mobileRotateNotice {
+      display: flex;
+    }
+
+    body.is-mobile-portrait:not(.allow-portrait-play) #gameWrap {
+      filter: brightness(.42) blur(1px);
+      pointer-events: none;
+    }
+
+    body.is-touch-device {
+      --game-safe-pad: 8px;
+    }
+
+    body.is-touch-device #gameWrap {
+      border-width: 2px !important;
+      border-radius: 10px !important;
+    }
+
+    @media (pointer: coarse) and (orientation: landscape) {
+      .overlay { padding: 6px !important; }
+
+      #startOverlay .startPanel {
+        padding: 14px 16px 16px !important;
+        border-radius: 22px !important;
+      }
+
+      .startKicker {
+        padding: 5px 11px !important;
+        font-size: 10px !important;
+        letter-spacing: .13em !important;
+      }
+
+      .startTitleBlock { margin-top: 7px !important; }
+      .startTitleSmall { font-size: clamp(22px, 5.8vh, 34px) !important; }
+      .startTitleMain { font-size: clamp(42px, 12vh, 70px) !important; }
+      .startTitle em { margin-top: 5px !important; padding: 4px 10px !important; font-size: 15px !important; }
+      .startTitleBadge { margin-top: 8px !important; padding: 6px 12px !important; font-size: 12px !important; }
+
+      .startLead {
+        margin-top: 9px !important;
+        padding: 9px 13px !important;
+        border-radius: 16px !important;
+        font-size: 12px !important;
+        line-height: 1.42 !important;
+      }
+
+      .startMissionGrid {
+        width: min(860px, 98%) !important;
+        grid-template-columns: repeat(4, 1fr) !important;
+        gap: 6px !important;
+        margin-top: 8px !important;
+      }
+
+      .startMissionCard {
+        min-height: 50px !important;
+        padding: 7px 7px !important;
+        border-radius: 14px !important;
+      }
+
+      .missionIcon { display: none !important; }
+      .startMissionCard b { font-size: 12px !important; }
+      .startMissionCard small { font-size: 10px !important; }
+
+      .startInfoGrid {
+        display: none !important;
+      }
+
+      #startOverlay .onlineStartChip {
+        margin-top: 8px !important;
+        padding: 7px 12px !important;
+        font-size: 11px !important;
+      }
+
+      .startButtonBar {
+        width: min(860px, 98%) !important;
+        grid-template-columns: 1fr 1.25fr .85fr .95fr !important;
+        gap: 6px !important;
+        margin-top: 8px !important;
+      }
+
+      #startOverlay .startButtonBar button {
+        min-height: 44px !important;
+        padding: 7px 8px !important;
+        border-radius: 14px !important;
+        font-size: 13px !important;
+        box-shadow: 0 4px 0 rgba(120,72,0,.85), 0 0 16px rgba(255,205,67,.22) !important;
+      }
+
+      #optionsOverlay .panel {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        padding: 12px !important;
+        gap: 8px !important;
+      }
+
+      #optionsOverlay .panel h1 {
+        font-size: 26px !important;
+      }
+
+      .optionRow {
+        min-height: 48px !important;
+        padding: 8px 10px !important;
+        border-radius: 13px !important;
+      }
+
+      #optionsOverlay button,
+      #optionsOverlay .optionRow button {
+        padding: 8px 11px !important;
+        font-size: 13px !important;
+        min-width: 104px !important;
+        border-radius: 12px !important;
+      }
+
+      .keyBindGrid {
+        grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+        gap: 7px !important;
+      }
+
+      .keyBindButton {
+        min-height: 38px !important;
+        padding: 7px 8px !important;
+      }
+
+      .keyBindButton span { font-size: 11px !important; }
+      .keyBindButton b { min-width: 48px !important; font-size: 10px !important; padding: 5px 6px !important; }
+      .keyConfigPanel { padding: 10px !important; border-radius: 15px !important; }
+      .keyConfigTitle { font-size: 16px !important; }
+      .keyConfigHint { font-size: 11px !important; margin-bottom: 7px !important; }
+      .keyConfigButtons { margin-top: 8px !important; }
+      #resetKeysBtn, #closeKeyConfigBtn, #closeOptionsBtn { min-width: 130px !important; }
+
+      #onlineArenaOverlay .onlineArenaPanel,
+      #endingGalleryOverlay .panel {
+        padding: 16px 14px 18px !important;
+      }
+
+      .onlineArenaTitle,
+      .galleryTitle {
+        font-size: clamp(30px, 7vh, 52px) !important;
+      }
+
+      .endingGalleryGrid {
+        grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+        gap: 8px !important;
+      }
+
+      .endingGalleryThumb { height: 145px !important; }
+      .endingGalleryBody { padding: 10px !important; }
+      .endingGalleryName { font-size: 14px !important; }
+      .endingGalleryCondition { font-size: 11px !important; }
+    }
+
+    @media (pointer: coarse) and (orientation: portrait) {
+      #gameWrap {
+        width: min(calc(var(--app-w) - 8px), calc((var(--app-h) - 8px) * var(--game-base-ratio)), 1668px) !important;
+      }
+    }
+
   </style>
 </head>
 <body>
@@ -4689,6 +5074,7 @@
 
     <div id="portraitLayer"></div>
     <div id="agendaBoard"><img id="agendaImage" src="assets/agenda/agenda_1.webp" alt="회의 안건" /></div>
+    <div id="hotspotLayer" aria-label="캐릭터 및 게시판 링크 핫스팟"></div>
     <div id="dialogueLayer"></div>
     <div id="chewFxLayer"></div>
     <div id="comboFxLayer"></div>
@@ -5084,8 +5470,70 @@
     </div>
   </div>
 
+  <div id="mobileRotateNotice" aria-live="polite">
+    <div class="mobileNoticeCard">
+      <div class="mobileNoticeIcon">📱↔️</div>
+      <div class="mobileNoticeTitle">가로모드 플레이 권장</div>
+      <div class="mobileNoticeText">
+        모바일 세로 화면은 게임 UI가 너무 작아질 수 있습니다.<br>
+        휴대폰을 가로로 돌리면 PC 화면처럼 전체 UI가 맞춰집니다.
+      </div>
+      <button id="mobilePortraitContinueBtn" type="button">세로로 계속 보기</button>
+    </div>
+  </div>
+
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
+
+    // PATCH v9.18.34 - Android/iOS Chrome 주소창 높이 변화 대응 + 모바일 방향 안내
+    (function setupResponsiveViewportPatch() {
+      const root = document.documentElement;
+      const portraitOverrideKey = "molbab_v9_allow_portrait_play_session";
+
+      function isTouchDevice() {
+        return (window.matchMedia && window.matchMedia("(pointer: coarse)").matches) || navigator.maxTouchPoints > 0;
+      }
+
+      function updateViewportVars() {
+        const vv = window.visualViewport;
+        const width = Math.max(1, Math.round(vv ? vv.width : window.innerWidth));
+        const height = Math.max(1, Math.round(vv ? vv.height : window.innerHeight));
+        root.style.setProperty("--app-w", width + "px");
+        root.style.setProperty("--app-h", height + "px");
+
+        if (document.body) {
+          const touch = isTouchDevice();
+          const portrait = touch && height > width;
+          document.body.classList.toggle("is-touch-device", touch);
+          document.body.classList.toggle("is-mobile-portrait", portrait);
+          document.body.classList.toggle("is-mobile-landscape", touch && width >= height);
+          let allowPortraitPlay = false;
+          try { allowPortraitPlay = sessionStorage.getItem(portraitOverrideKey) === "1"; } catch (err) { allowPortraitPlay = false; }
+          document.body.classList.toggle("allow-portrait-play", allowPortraitPlay);
+        }
+      }
+
+      window.addEventListener("resize", updateViewportVars, { passive: true });
+      window.addEventListener("orientationchange", () => setTimeout(updateViewportVars, 180), { passive: true });
+      if (window.visualViewport) {
+        window.visualViewport.addEventListener("resize", updateViewportVars, { passive: true });
+        window.visualViewport.addEventListener("scroll", updateViewportVars, { passive: true });
+      }
+      document.addEventListener("DOMContentLoaded", () => {
+        updateViewportVars();
+        const continueBtn = document.getElementById("mobilePortraitContinueBtn");
+        if (continueBtn) {
+          continueBtn.addEventListener("click", () => {
+            try { sessionStorage.setItem(portraitOverrideKey, "1"); } catch (err) {}
+            document.body.classList.add("allow-portrait-play");
+            updateViewportVars();
+          });
+        }
+      });
+      updateViewportVars();
+    })();
+
     const riceFrames = Array.from({length: 8}, (_, i) => `assets/rice/molbab_${i + 1}.webp`);
     const kimchiFrames = Array.from({length: 10}, (_, i) => `assets/kimchi/molkimchi_2_${i + 1}.webp`);
     const defaultImage = "assets/player/molbab_default_image.webp";
@@ -5272,11 +5720,56 @@
       rate: 1.08
     };
 
+    const meetingLinkHotspots = [
+      { id: "board", label: "버블란 카페", subLabel: "게시판 바로가기", href: "https://cafe.naver.com/turzuran", x: 50.4, y: 15.7, w: 31.0, h: 24.0 },
+      { id: "player", label: "공태연", subLabel: "SOOPLIVE 바로가기", href: "https://www.sooplive.com/station/ballty0719", x: 9.0, y: 78.0, w: 15.0, h: 21.5 },
+      { id: "blue", label: "슈니", subLabel: "SOOPLIVE 바로가기", href: "https://www.sooplive.com/station/k4187421", x: 11.2, y: 50.2, w: 15.2, h: 23.0 },
+      { id: "black", label: "쩜냥이", subLabel: "SOOPLIVE 바로가기", href: "https://www.sooplive.com/station/hhr001234", x: 20.3, y: 46.4, w: 12.8, h: 22.4 },
+      { id: "white", label: "루루시", subLabel: "SOOPLIVE 바로가기", href: "https://www.sooplive.com/station/darklucy", x: 29.0, y: 45.4, w: 13.4, h: 22.2 },
+      { id: "leader", label: "수장님", subLabel: "SOOPLIVE 바로가기", href: "https://www.sooplive.com/station/jaeparkk", x: 49.8, y: 39.4, w: 15.2, h: 26.0 },
+      { id: "cat", label: "다시바", subLabel: "SOOPLIVE 바로가기", href: "https://www.sooplive.com/station/tdnlamuron", x: 71.8, y: 43.0, w: 12.6, h: 23.0 },
+      { id: "green", label: "초금비", subLabel: "SOOPLIVE 바로가기", href: "https://www.sooplive.com/station/chogeumbi", x: 80.1, y: 47.0, w: 11.8, h: 21.8 },
+      { id: "purple", label: "홍길순", subLabel: "SOOPLIVE 바로가기", href: "https://www.sooplive.com/station/hongkillsoon", x: 88.5, y: 48.8, w: 12.0, h: 22.8 },
+      { id: "cat2", label: "고양이귀 멤버", subLabel: "SOOPLIVE 바로가기", href: "https://www.sooplive.com/station/nnojoke486", x: 95.0, y: 60.2, w: 10.6, h: 24.2 }
+    ];
+
     function getBubblePersonByTarget(targetKey) {
       const map = { team1: "blue", team2: "black", team3: "white", team4: "cat", team5: "green", team6: "purple", team7: "cat2" };
       if (targetKey === "player") return playerSpeaker;
       const id = map[targetKey];
       return bubblePeople.find(p => p.id === id) || null;
+    }
+
+    function buildLinkHotspots() {
+      if (!hotspotLayer) return;
+      hotspotLayer.innerHTML = "";
+      meetingLinkHotspots.forEach(hotspot => {
+        const link = document.createElement("a");
+        link.className = "meetingHotspot";
+        link.href = hotspot.href;
+        link.target = "_blank";
+        link.rel = "noopener noreferrer";
+        link.title = `${hotspot.label} 링크 열기`;
+        link.setAttribute("aria-label", `${hotspot.label} 링크 열기`);
+        link.style.left = `${hotspot.x}%`;
+        link.style.top = `${hotspot.y}%`;
+        link.style.width = `${hotspot.w}%`;
+        link.style.height = `${hotspot.h}%`;
+
+        const label = document.createElement("span");
+        label.className = "meetingHotspotLabel";
+        label.innerHTML = `${hotspot.label}<small>${hotspot.subLabel}</small>`;
+        link.appendChild(label);
+
+        const activate = () => link.classList.add("touch-active");
+        const deactivate = () => link.classList.remove("touch-active");
+        link.addEventListener("touchstart", activate, { passive: true });
+        link.addEventListener("touchend", () => setTimeout(deactivate, 180), { passive: true });
+        link.addEventListener("touchcancel", deactivate, { passive: true });
+        link.addEventListener("blur", deactivate);
+
+        hotspotLayer.appendChild(link);
+      });
     }
 
 
@@ -5502,6 +5995,7 @@
     const statusText = document.getElementById("statusText");
 
     const portraitLayer = document.getElementById("portraitLayer");
+    const hotspotLayer = document.getElementById("hotspotLayer");
     const agendaBoard = document.getElementById("agendaBoard");
     const agendaImage = document.getElementById("agendaImage");
     const molbabActor = document.getElementById("molbabActor");
@@ -5523,6 +6017,8 @@
     const leaderPupils = document.getElementById("leaderPupils");
     const rocketOverlay = document.getElementById("rocketOverlay");
     const rocketWindowImg = document.getElementById("rocketWindowImg");
+
+    buildLinkHotspots();
 
     const startOverlay = document.getElementById("startOverlay");
     const optionsOverlay = document.getElementById("optionsOverlay");
