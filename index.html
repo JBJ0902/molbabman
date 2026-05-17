@@ -31,6 +31,8 @@
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Malgun Gothic", sans-serif;
       overflow: hidden;
       touch-action: manipulation;
+      -webkit-user-select: none;
+      user-select: none;
     }
     #gameWrap {
       position: relative;
@@ -5070,7 +5072,7 @@
   </style>
 </head>
 <body>
-  <div id="gameWrap">
+  <div id="gameWrap" oncontextmenu="return false;">
     <img id="meetingBg" src="assets/bg/stage_1.webp" alt="회의실 배경" />
     <div id="stageMoodOverlay"></div>
     <div id="stageWatermark">
@@ -5989,6 +5991,26 @@
     };
 
     const gameWrap = document.getElementById("gameWrap");
+
+    function blockGameContextMenu(event) {
+      if (!gameWrap) return;
+      const target = event.target;
+      if (target === gameWrap || (target && gameWrap.contains(target))) {
+        event.preventDefault();
+        event.stopPropagation();
+        return false;
+      }
+    }
+
+    document.addEventListener("contextmenu", blockGameContextMenu, true);
+    gameWrap.addEventListener("contextmenu", blockGameContextMenu, true);
+    gameWrap.addEventListener("pointerdown", event => {
+      if (event.button === 2) blockGameContextMenu(event);
+    }, true);
+    gameWrap.addEventListener("mousedown", event => {
+      if (event.button === 2) blockGameContextMenu(event);
+    }, true);
+
     const meetingBg = document.getElementById("meetingBg");
     const resultBanner = document.getElementById("resultBanner");
     const stageText = document.getElementById("stageText");
