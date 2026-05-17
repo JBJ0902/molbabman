@@ -375,17 +375,15 @@
     .meetingHotspot {
       position: absolute;
       transform: translate(-50%, -50%);
-      border-radius: 16px;
+      border-radius: 14px;
       pointer-events: auto;
       cursor: pointer;
       text-decoration: none;
       outline: none;
-      background: rgba(255,255,255,.015);
+      background: transparent;
       border: 1px solid rgba(255,255,255,0);
-      box-shadow: inset 0 0 0 1px rgba(255,255,255,0), 0 0 0 rgba(0,0,0,0);
-      transition: background .2s ease, border-color .2s ease, box-shadow .2s ease, transform .2s ease, opacity .2s ease;
-      -webkit-backdrop-filter: blur(0px);
-      backdrop-filter: blur(0px);
+      box-shadow: none;
+      transition: transform .2s ease, opacity .2s ease;
       opacity: .02;
       overflow: visible;
     }
@@ -393,44 +391,72 @@
     .meetingHotspot:focus-visible,
     .meetingHotspot.touch-active {
       opacity: 1;
-      background: linear-gradient(180deg, rgba(110,215,255,.16), rgba(255,215,90,.12));
-      border-color: rgba(162,235,255,.84);
-      box-shadow: inset 0 0 0 1px rgba(255,255,255,.28), 0 0 24px rgba(110,215,255,.24);
-      -webkit-backdrop-filter: blur(3px);
-      backdrop-filter: blur(3px);
-      transform: translate(-50%, -50%) scale(1.015);
+      transform: translate(-50%, -50%) scale(1.01);
+    }
+    .meetingHotspot::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 58%;
+      height: 58%;
+      border-radius: 12px;
+      transform: translate(-50%, -50%) scale(.96);
+      opacity: 0;
+      pointer-events: none;
+      background: linear-gradient(180deg, rgba(110,215,255,.15), rgba(255,215,90,.10));
+      border: 1px solid rgba(162,235,255,.76);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.18), 0 0 18px rgba(110,215,255,.18);
+      -webkit-backdrop-filter: blur(2px);
+      backdrop-filter: blur(2px);
+      transition: opacity .18s ease, transform .18s ease, background .18s ease, border-color .18s ease;
     }
     .meetingHotspot::before {
       content: "";
       position: absolute;
-      inset: 5px;
-      border-radius: 12px;
+      left: 50%;
+      top: 50%;
+      width: 45%;
+      height: 45%;
+      border-radius: 9px;
+      transform: translate(-50%, -50%) scale(.96);
+      opacity: 0;
+      pointer-events: none;
       border: 1px dashed rgba(255,255,255,.0);
-      transition: border-color .2s ease;
+      transition: opacity .18s ease, border-color .18s ease, transform .18s ease;
+      z-index: 1;
+    }
+    .meetingHotspot:hover::after,
+    .meetingHotspot:focus-visible::after,
+    .meetingHotspot.touch-active::after {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
     }
     .meetingHotspot:hover::before,
     .meetingHotspot:focus-visible::before,
     .meetingHotspot.touch-active::before {
-      border-color: rgba(255,255,255,.28);
+      opacity: 1;
+      border-color: rgba(255,255,255,.24);
+      transform: translate(-50%, -50%) scale(1);
     }
     .meetingHotspotLabel {
       position: absolute;
       left: 50%;
       bottom: calc(100% + 8px);
       transform: translateX(-50%) translateY(6px);
-      padding: 8px 12px;
+      padding: 6px 10px;
       border-radius: 999px;
       background: rgba(6, 10, 22, .82);
       border: 1px solid rgba(165, 236, 255, .58);
       color: #ecfbff;
-      font-size: clamp(10px, .85vw, 14px);
+      font-size: clamp(9px, .74vw, 12px);
       font-weight: 800;
       letter-spacing: .02em;
       text-align: center;
       white-space: nowrap;
       opacity: 0;
       pointer-events: none;
-      box-shadow: 0 10px 22px rgba(0,0,0,.25);
+      box-shadow: 0 8px 18px rgba(0,0,0,.22);
       transition: opacity .2s ease, transform .2s ease;
     }
     .meetingHotspot:hover .meetingHotspotLabel,
@@ -449,12 +475,16 @@
     }
     @media (pointer: coarse) {
       .meetingHotspot {
-        opacity: .12;
-        background: rgba(125, 208, 255, .04);
-        border-color: rgba(165, 236, 255, .16);
+        opacity: .08;
+      }
+      .meetingHotspot::after {
+        width: 64%;
+        height: 64%;
+        background: rgba(125, 208, 255, .08);
+        border-color: rgba(165, 236, 255, .28);
       }
       .meetingHotspotLabel {
-        font-size: clamp(11px, 1.9vw, 14px);
+        font-size: clamp(10px, 1.7vw, 13px);
       }
     }
 
@@ -5737,16 +5767,16 @@
     };
 
     const meetingLinkHotspots = [
-      // v9.18.38: 핫스팟 박스를 기존보다 약 25~35% 작게 조정했습니다.
-      { id: "board", label: "버블란 카페", subLabel: "게시판 바로가기", href: "https://cafe.naver.com/turzuran", x: 50.4, y: 15.7, w: 23.8, h: 16.8 },
+      // v9.18.40: 영상 기준으로 보이는 반투명 박스만 한 번 더 작게 조정하고 터치 영역은 유지했습니다.
+      { id: "board", label: "버블란 카페", subLabel: "게시판 바로가기", href: "https://cafe.naver.com/turzuran", x: 58.4, y: 13.7, w: 12.8, h: 20.8 },
       { id: "player", label: "공태연", subLabel: "SOOPLIVE 바로가기", href: "https://www.sooplive.com/station/ballty0719", x: 9.0, y: 78.0, w: 10.8, h: 15.8 },
       { id: "blue", label: "슈니", subLabel: "SOOPLIVE 바로가기", href: "https://www.sooplive.com/station/k4187421", x: 11.2, y: 50.2, w: 11.0, h: 16.8 },
-      { id: "black", label: "쩜냥이", subLabel: "SOOPLIVE 바로가기", href: "https://www.sooplive.com/station/hhr001234", x: 20.3, y: 46.4, w: 9.2, h: 16.2 },
-      { id: "white", label: "루루시", subLabel: "SOOPLIVE 바로가기", href: "https://www.sooplive.com/station/darklucy", x: 29.0, y: 45.4, w: 9.6, h: 16.0 },
-      { id: "leader", label: "수장님", subLabel: "SOOPLIVE 바로가기", href: "https://www.sooplive.com/station/jaeparkk", x: 49.8, y: 39.4, w: 10.8, h: 18.6 },
+      { id: "black", label: "쩜냥이", subLabel: "SOOPLIVE 바로가기", href: "https://www.sooplive.com/station/hhr001234", x: 25.3, y: 46.4, w: 9.2, h: 16.2 },
+      { id: "white", label: "루루시", subLabel: "SOOPLIVE 바로가기", href: "https://www.sooplive.com/station/darklucy", x: 34.0, y: 40.4, w: 9.6, h: 16.0 },
+      { id: "leader", label: "수장님", subLabel: "SOOPLIVE 바로가기", href: "https://www.sooplive.com/station/jaeparkk", x: 51.8, y: 36.4, w: 10.8, h: 18.6 },
       { id: "cat", label: "다시바", subLabel: "SOOPLIVE 바로가기", href: "https://www.sooplive.com/station/tdnlamuron", x: 71.8, y: 43.0, w: 9.0, h: 16.8 },
       { id: "green", label: "초금비", subLabel: "SOOPLIVE 바로가기", href: "https://www.sooplive.com/station/chogeumbi", x: 80.1, y: 47.0, w: 8.4, h: 15.8 },
-      { id: "purple", label: "홍길순", subLabel: "SOOPLIVE 바로가기", href: "https://www.sooplive.com/station/hongkillsoon", x: 88.5, y: 48.8, w: 8.6, h: 16.6 },
+      { id: "purple", label: "홍길순", subLabel: "SOOPLIVE 바로가기", href: "https://www.sooplive.com/station/hongkillsoon", x: 84.5, y: 48.8, w: 8.6, h: 16.6 },
       { id: "cat2", label: "큐티섹시", subLabel: "SOOPLIVE 바로가기", href: "https://www.sooplive.com/station/nnojoke486", x: 95.0, y: 60.2, w: 7.8, h: 17.6 }
     ];
 
