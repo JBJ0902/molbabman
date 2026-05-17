@@ -4899,7 +4899,7 @@
 
           <section class="onlineCard onlineTierCard">
             <div class="onlineCardTitle">내 온라인 티어</div>
-            <div class="tierBadgeLarge" id="myTierBadge">방출 후보</div>
+            <div class="tierBadgeLarge" id="myTierBadge">-------</div>
             <div class="tierStatGrid">
               <div><span>최고점수</span><b id="myBestScore">0</b></div>
               <div><span>플레이</span><b id="myTotalPlays">0</b></div>
@@ -8970,6 +8970,19 @@
       return tier.name;
     }
 
+    const ONLINE_UNRANKED_TIER = "-------";
+
+    function hasOnlinePlacement(profile) {
+      return Number((profile && profile.total_plays) || 0) > 0;
+    }
+
+    function getOnlineDisplayTier(profile) {
+      if (!hasOnlinePlacement(profile)) return ONLINE_UNRANKED_TIER;
+      const best = Number((profile && profile.best_score) || 0);
+      const savedTier = String((profile && profile.tier) || "").trim();
+      return savedTier && savedTier !== ONLINE_UNRANKED_TIER ? savedTier : getOnlineTier(best);
+    }
+
     function getTierProgressInfo(score) {
       const value = Number(score || 0);
       let currentIndex = 0;
@@ -9017,7 +9030,9 @@
       const chip = document.getElementById("startOnlineStatusChip");
       if (!chip) return;
       if (onlineState.user && onlineState.profile) {
-        chip.textContent = `온라인 로그인: ${onlineState.profile.nickname} · ${onlineState.profile.tier || getOnlineTier(onlineState.profile.best_score)} · 접속자 ${onlineState.activeCount || 1}명`;
+        const displayTier = getOnlineDisplayTier(onlineState.profile);
+        const tierSuffix = displayTier === ONLINE_UNRANKED_TIER ? "계급없음" : displayTier;
+        chip.textContent = `온라인 로그인: ${onlineState.profile.nickname} · ${tierSuffix} · 접속자 ${onlineState.activeCount || 1}명`;
       } else if (onlineState.user) {
         chip.textContent = `온라인 로그인 확인 중 · 접속자 ${onlineState.activeCount || 1}명`;
       } else {
@@ -9040,12 +9055,12 @@
 
       if (!loggedIn) {
         setOnlineAuthStatus("로그인 후 온라인 순위전, 티어, 엔딩 해금 저장을 사용할 수 있습니다.", "warn");
-        setOnlineElementText("myTierBadge", "방출 후보");
+        setOnlineElementText("myTierBadge", ONLINE_UNRANKED_TIER);
         setOnlineElementText("myBestScore", "0");
         setOnlineElementText("myTotalPlays", "0");
         setOnlineElementText("myEndingCount", "0/10");
-        setOnlineElementText("tierNextLabel", "다음 티어까지");
-        setOnlineElementText("tierNextScore", "10,000점");
+        setOnlineElementText("tierNextLabel", "로그인 후 배치");
+        setOnlineElementText("tierNextScore", "계급없음");
         const fill = document.getElementById("tierProgressFill");
         if (fill) fill.style.width = "0%";
         updateStartOnlineChip();
@@ -9053,16 +9068,21 @@
       }
 
       const best = Number(profile.best_score || 0);
-      const tier = profile.tier || getOnlineTier(best);
+      const totalPlays = Number(profile.total_plays || 0);
+      const tier = getOnlineDisplayTier(profile);
+      const placed = hasOnlinePlacement(profile);
       const progress = getTierProgressInfo(best);
 
-      setOnlineAuthStatus(`${profile.nickname || "몰밥러"} 계정으로 로그인됨 · ${tier}`, "ok");
+      setOnlineAuthStatus(`${profile.nickname || "몰밥러"} 계정으로 로그인됨 · ${placed ? tier : "계급없음"}`, "ok");
       setOnlineElementText("myTierBadge", tier);
       setOnlineElementText("myBestScore", best.toLocaleString());
-      setOnlineElementText("myTotalPlays", String(profile.total_plays || 0));
+      setOnlineElementText("myTotalPlays", String(totalPlays));
       setOnlineElementText("myEndingCount", `${profile.endings_unlocked_count || 0}/10`);
 
-      if (progress.next) {
+      if (!placed) {
+        setOnlineElementText("tierNextLabel", "첫 순위전 후 배치");
+        setOnlineElementText("tierNextScore", "계급없음");
+      } else if (progress.next) {
         setOnlineElementText("tierNextLabel", `다음 티어: ${progress.next.name}`);
         setOnlineElementText("tierNextScore", `${progress.remain.toLocaleString()}점 남음`);
       } else {
@@ -9071,7 +9091,7 @@
       }
 
       const fill = document.getElementById("tierProgressFill");
-      if (fill) fill.style.width = `${progress.percent}%`;
+      if (fill) fill.style.width = placed ? `${progress.percent}%` : "0%";
 
       updateStartOnlineChip();
     }
@@ -9144,7 +9164,7 @@
         const insertPayload = {
           user_id: user.id,
           nickname: fallbackNickname,
-          tier: "방출 후보",
+          tier: ONLINE_UNRANKED_TIER,
           best_score: 0,
           best_combo: 0,
           total_plays: 0,
@@ -9162,9 +9182,11 @@
         if (inserted.error) throw inserted.error;
         data = inserted.data;
       } else {
+        const profileHasPlay = Number(data.total_plays || 0) > 0;
+        const normalizedTier = profileHasPlay ? (data.tier || getOnlineTier(data.best_score)) : ONLINE_UNRANKED_TIER;
         const updated = await client
           .from("profiles")
-          .update({ last_seen_at: new Date().toISOString() })
+          .update({ tier: normalizedTier, last_seen_at: new Date().toISOString() })
           .eq("user_id", user.id)
           .select("user_id,nickname,tier,best_score,best_combo,total_plays,endings_unlocked_count,updated_at,last_seen_at")
           .single();
@@ -9520,6 +9542,7 @@
         const { data, error } = await client
           .from("profiles")
           .select("user_id,nickname,tier,best_score,best_combo,total_plays,endings_unlocked_count,updated_at")
+          .gt("total_plays", 0)
           .order("best_score", { ascending: false })
           .order("best_combo", { ascending: false })
           .order("updated_at", { ascending: true })
@@ -9537,7 +9560,7 @@
         const htmlRows = data.map((row, index) => {
           const isMe = me && row.user_id === me;
           const score = Number(row.best_score || 0);
-          const tier = row.tier || getOnlineTier(score);
+          const tier = getOnlineDisplayTier(row);
           return `
             <div class="rankRow ${isMe ? "me" : ""}">
               <div class="rankNo">#${index + 1}</div>
