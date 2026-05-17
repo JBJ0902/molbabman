@@ -3,20 +3,20 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
-  <title>공태연 몰밥 사건 레전드 서바이벌 게임</title>
+  <title>공태연 몰밥 서바이벌 게임 (타이밍 게임)</title>
   <meta name="description" content="수장님의 시선을 피해 밥알과 김치를 몰래 먹고 정직원이 되는 회의실 타이밍 생존 게임입니다.">
 
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://molbabman.donggops.cloud-ip.cc/">
-  <meta property="og:title" content="공태연 몰밥 사건 레전드 서바이벌 게임">
-  <meta property="og:description" content="수장님의 시선을 피해 밥알과 김치를 몰래 먹고 정직원을 유지하는 서바이벌 생존 게임입니다.">
+  <meta property="og:title" content="공태연 몰밥 서바이벌 게임 (타이밍 게임)">
+  <meta property="og:description" content="수장님의 시선을 피해 밥알과 김치를 몰래 먹고 정직원이 되는 회의실 타이밍 생존 게임입니다.">
   <meta property="og:image" content="https://molbabman.donggops.cloud-ip.cc/assets/bg/stage_1.webp">
-  <meta property="og:site_name" content="공태연 몰밥 사건 레전드 서바이벌 게임">
+  <meta property="og:site_name" content="몰밥 회의실 서바이벌">
   <meta property="og:locale" content="ko_KR">
 
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="공태연 몰밥 서바이벌 게임 (타이밍 게임)">
-  <meta name="twitter:description" content="수장님의 시선을 피해 몰밥하고 정직원을 유지해야되는 서바이벌 게임입니다.">
+  <meta name="twitter:description" content="수장님의 시선을 피해 몰밥하고 정직원이 되는 회의실 타이밍 생존 게임입니다.">
   <meta name="twitter:image" content="https://molbabman.donggops.cloud-ip.cc/assets/bg/stage_1.webp">
 <style>
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -373,7 +373,7 @@
     .meetingHotspot {
       position: absolute;
       transform: translate(-50%, -50%);
-      border-radius: 22px;
+      border-radius: 16px;
       pointer-events: auto;
       cursor: pointer;
       text-decoration: none;
@@ -401,8 +401,8 @@
     .meetingHotspot::before {
       content: "";
       position: absolute;
-      inset: 8px;
-      border-radius: 16px;
+      inset: 5px;
+      border-radius: 12px;
       border: 1px dashed rgba(255,255,255,.0);
       transition: border-color .2s ease;
     }
@@ -2237,7 +2237,7 @@
 
   
 
-    /* v9.18.21 타이머 생존 모드 / HUD 재배치 / 스테이지 시작 카드 */
+    /* v9.18.38 타이머 생존 모드 / HUD 재배치 / 스테이지 시작 카드 */
     #stageTimerPanel {
       position: absolute;
       top: 62px;
@@ -5735,16 +5735,17 @@
     };
 
     const meetingLinkHotspots = [
-      { id: "board", label: "버블란 카페", subLabel: "게시판 바로가기", href: "https://cafe.naver.com/turzuran", x: 50.4, y: 15.7, w: 31.0, h: 24.0 },
-      { id: "player", label: "공태연", subLabel: "SOOPLIVE 바로가기", href: "https://www.sooplive.com/station/ballty0719", x: 9.0, y: 78.0, w: 15.0, h: 21.5 },
-      { id: "blue", label: "슈니", subLabel: "SOOPLIVE 바로가기", href: "https://www.sooplive.com/station/k4187421", x: 11.2, y: 50.2, w: 15.2, h: 23.0 },
-      { id: "black", label: "쩜냥이", subLabel: "SOOPLIVE 바로가기", href: "https://www.sooplive.com/station/hhr001234", x: 20.3, y: 46.4, w: 12.8, h: 22.4 },
-      { id: "white", label: "루루시", subLabel: "SOOPLIVE 바로가기", href: "https://www.sooplive.com/station/darklucy", x: 29.0, y: 45.4, w: 13.4, h: 22.2 },
-      { id: "leader", label: "수장님", subLabel: "SOOPLIVE 바로가기", href: "https://www.sooplive.com/station/jaeparkk", x: 49.8, y: 39.4, w: 15.2, h: 26.0 },
-      { id: "cat", label: "다시바", subLabel: "SOOPLIVE 바로가기", href: "https://www.sooplive.com/station/tdnlamuron", x: 71.8, y: 43.0, w: 12.6, h: 23.0 },
-      { id: "green", label: "초금비", subLabel: "SOOPLIVE 바로가기", href: "https://www.sooplive.com/station/chogeumbi", x: 80.1, y: 47.0, w: 11.8, h: 21.8 },
-      { id: "purple", label: "홍길순", subLabel: "SOOPLIVE 바로가기", href: "https://www.sooplive.com/station/hongkillsoon", x: 88.5, y: 48.8, w: 12.0, h: 22.8 },
-      { id: "cat2", label: "큐티섹시", subLabel: "SOOPLIVE 바로가기", href: "https://www.sooplive.com/station/nnojoke486", x: 95.0, y: 60.2, w: 10.6, h: 24.2 }
+      // v9.18.38: 핫스팟 박스를 기존보다 약 25~35% 작게 조정했습니다.
+      { id: "board", label: "버블란 카페", subLabel: "게시판 바로가기", href: "https://cafe.naver.com/turzuran", x: 50.4, y: 15.7, w: 23.8, h: 16.8 },
+      { id: "player", label: "공태연", subLabel: "SOOPLIVE 바로가기", href: "https://www.sooplive.com/station/ballty0719", x: 9.0, y: 78.0, w: 10.8, h: 15.8 },
+      { id: "blue", label: "슈니", subLabel: "SOOPLIVE 바로가기", href: "https://www.sooplive.com/station/k4187421", x: 11.2, y: 50.2, w: 11.0, h: 16.8 },
+      { id: "black", label: "쩜냥이", subLabel: "SOOPLIVE 바로가기", href: "https://www.sooplive.com/station/hhr001234", x: 20.3, y: 46.4, w: 9.2, h: 16.2 },
+      { id: "white", label: "루루시", subLabel: "SOOPLIVE 바로가기", href: "https://www.sooplive.com/station/darklucy", x: 29.0, y: 45.4, w: 9.6, h: 16.0 },
+      { id: "leader", label: "수장님", subLabel: "SOOPLIVE 바로가기", href: "https://www.sooplive.com/station/jaeparkk", x: 49.8, y: 39.4, w: 10.8, h: 18.6 },
+      { id: "cat", label: "다시바", subLabel: "SOOPLIVE 바로가기", href: "https://www.sooplive.com/station/tdnlamuron", x: 71.8, y: 43.0, w: 9.0, h: 16.8 },
+      { id: "green", label: "초금비", subLabel: "SOOPLIVE 바로가기", href: "https://www.sooplive.com/station/chogeumbi", x: 80.1, y: 47.0, w: 8.4, h: 15.8 },
+      { id: "purple", label: "홍길순", subLabel: "SOOPLIVE 바로가기", href: "https://www.sooplive.com/station/hongkillsoon", x: 88.5, y: 48.8, w: 8.6, h: 16.6 },
+      { id: "cat2", label: "큐티섹시", subLabel: "SOOPLIVE 바로가기", href: "https://www.sooplive.com/station/nnojoke486", x: 95.0, y: 60.2, w: 7.8, h: 17.6 }
     ];
 
     function getBubblePersonByTarget(targetKey) {
@@ -8629,7 +8630,7 @@
 
 
 
-    // v9.18.21 PATCH: 타이머 생존 방식 + HUD 분리 + 스테이지 시작 카드 개선
+    // v9.18.36 PATCH: 공태연 몰밥 서바이벌 링크 미리보기 메타 정리
     const STAGE_SURVIVAL_BALANCE = [
       null,
       { timeLimit: 60,  safeTime: 5.8, warningTime: 2.1, watchTime: 1.25, riceScorePerSecond: 80,  kimchiScorePerSecond: 125, riceSuspicionPerSecond: 7.5,  kimchiSuspicionPerSecond: 15, suspicionDecayPerSecond: 15,   dialogueInterval: 2.3 },
